@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <script type="text/javascript"
+                src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=lhdkiz549f">
+        </script>
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet"
+              href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+              integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+              crossorigin="anonymous">
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+                integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+                crossorigin="anonymous">
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+                integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+                crossorigin="anonymous">
+        </script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+                integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+                crossorigin="anonymous">
+        </script>
+
+        <script src=" https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+
+
+
+        <style>
+            #map {
+                width: 400px;
+                height: 300px;
+                margin: 50px auto 50px auto;
+            }
+            .wrap {
+                width: 600px;
+                margin: auto;
+            }
+            .input{
+                margin: auto;
+            }
+            .scroll{
+                overflow:auto;
+                width:400px;
+                height:150px;
+                margin: auto;
+                border:5px #33FF66 solid;
+                visibility:hidden;
+            }
+            h1.indent{
+                padding-left: 3.0em
+            }
+
+        </style>
+
+        <title>뭐하고 놀지?</title>
+    </head>
+    <body>
+        <div class="wrap" >
+            <h1 class="indent">오늘 뭐하고 놀까?</h1>
+            <div class="input">
+                <div class="input-group mb-3" >
+                    <input type="text" class="form-control" placeholder="동 이름만!!" aria-label="Recipient's username" aria-describedby="button-addon2">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" id="button-addon2">가즈아</button>
+                    </div>
+                </div>
+            </div>
+
+
+            <div id="map"></div>
+
+
+            <div class ="scroll">
+                <p>
+                    여기는 DIV 스타일에 overflow: auto; 속성을 주었다. 내용의 양이 DIV 영역보다 많으면 스클롤바가 표시되고 적으면 표시되지 않는다. ====> 이 글은 예를 보이기 위한 것이므로 읽을 필요가 없다.
+                    여기는 DIV 스타일에 overflow: auto; 속성을 주었다. 내용의 양이 DIV 영역보다 많으면 스클롤바가 표시되고 적으면 표시되지 않는다.여기는 DIV 스타일에 overflow: auto; 속성을 주었다. 내용의 양이 DIV 영역보다 많으면 스클롤바가 표시되고 적으면 표시되지 않는다.여기는 DIV 스타일에 overflow: auto; 속성을 주었다. 내용의 양이 DIV 영역보다 많으면 스클롤바가 표시되고 적으면 표시되지 않는다.여기는 DIV 스타일에 overflow: auto; 속성을 주었다. 내용의 양이 DIV 영역보다 많으면 스클롤바가 표시되고 적으면 표시되지 않는다.여기는 DIV 스타일에 overflow: auto; 속성을 주었다. 내용의 양이 DIV 영역보다 많으면 스클롤바가 표시되고 적으면 표시되지 않는다.
+                </p>
+            </div>
+        </div>
+
+
+
+         <script>
+            // 서울시 전체 구 이름 목록
+            let seoulGu = ["종로구", "중구", "용산구", "성동구", "광진구", "동대문구", "중랑구", "성북구", "강북구", "도봉구", "노원구", "은평구", "서대문구", "마포구", "양천구", "강서구", "구로구", "금천구", "영등포구", "동작구", "관악구", "서초구", "강남구", "송파구", "강동구"];
+            // 전달받은 구 이름이 seoulGu 목록에 있는지 확인
+            function isValidGuName(guName) {
+                for (let i = 0; i < seoulGu.length; i++) {
+                    if (guName == seoulGu[i]) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            // 맛집 검색 요청
+            function find_my_best_place() {
+                let guName = $('#gu-name').val();
+                if (guName == '') {
+                    alert('구 이름을 입력하세요');
+                    return;
+                }
+                if (isValidGuName(guName) == false) {
+                    alert('올바른 구 이름을 입력하세요');
+                    return;
+                }
+
+
+                // 기존 맛집 목록이 있으면 지우기
+                $('#matjip-box').empty();
+                // 맛집 정보 요청
+                $.ajax({
+                    type: "GET",
+                    url: `/matjip?gu_give=${guName}`,
+                    data: {},
+                    success: function (response) {
+                        // 맛집 요청 성공 여부 검사
+                        if (response['result'] == 'success') {
+                            // 전달받은 맛집 리스트를 matjipList에 저장한다.
+                            let matjipList = response['matjip_list'];
+                            // TM128 좌표를 위도/경도 좌표로 변환하기
+                            matjipList = getMatjipListWithGeoData(matjipList);
+                            // 맛집을 HTML로 추가하기
+                            addHTML(matjipList);
+                            // 지도 그리기
+                            drawMap(matjipList);
+                            // console.log(matjipList);
+                        } else {
+                            alert('검색이 실패하였습니다.');
+                        }
+                    }
+                });
+            }
+
+            function addHTML(matjipList) {
+                for (let i = 0; i < matjipList.length; i++) {
+                    let tempHtml = makeCard(matjipList[i]);
+                    $('#matjip-box').append(tempHtml);
+                }
+            }
+
+            function makeCard(matjip) {
+                return `<div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title"><a href="#" class="matjip-title">${matjip['title']}</a></h5>
+                                <h6 class="card-subtitle mb-2 text-muted">${matjip['category']}</h6>
+                                <p class="card-text">${matjip['roadAddress']}</p>
+                                <a href="${matjip['link']}" target="_blank" class="card-link">링크</a>
+                                <a href="#" class="card-link">${matjip['telephone']}</a>
+                            </div>
+                        </div>`;
+            }
+
+            function drawMap(matjipList) {
+                // 1등 맛집의 위치 정보를 geoData에 저장합니다.
+                let geoData = matjipList[0]['geoData'];
+                // 마커 목록 만들기
+                let markerList = [];
+                // 1등 맛집을 지도의 중심에 놓습니다.
+                let numberOne = new naver.maps.LatLng(geoData['lat'], geoData['lng']),
+                    map = new naver.maps.Map('map', {
+                        center: numberOne,
+                        zoom: 12
+                    }),
+                    marker = new naver.maps.Marker({
+                        position: numberOne,
+                        map: map
+                    });
+
+                // 2등부터 마지막까지 맛집 데이터를 지도에 표시합니다.
+                for (let i = 1; i < matjipList.length; i++) {
+                    let matjip = matjipList[i];
+                    let position = new naver.maps.LatLng(matjip['geoData']['lat'], matjip['geoData']['lng'])
+                    marker = new naver.maps.Marker({
+                        position: position,
+                        map: map
+                    });
+                }
+            }
+
+
+
+
+            // matjipList 좌표 정보를 바꾸기
+            function getMatjipListWithGeoData(matjipList) {
+                // 반환할 맛집 목록
+                let result = [];
+
+                for (let i = 0; i < matjipList.length; i++) {
+                    // 개별 맛집 데이터를 matjip에 저장
+                    let matjip = matjipList[i];
+                    let mapx = matjip['mapx'];
+                    let mapy = matjip['mapy'];
+                    // TM128 좌표를 위도(lat), 경도(lng) 딕셔너리로 반환
+                    let geoData = getLatLng(mapx, mapy);
+                    // geoData 라는 이름으로 맛집 데이터에 추가
+                    matjip['geoData'] = geoData;
+                    // 반환할 맛집 목록에 추가
+                    result.push(matjip);
+                }
+                // 맛집 목록 반환
+                return result;
+            }
+
+            // TM128 좌표를 위도(lat), 경도(lng) 딕셔너리로 반환
+            function getLatLng(mapx, mapy) {
+                // 문자열 -> 숫자로 변환
+                let x = parseInt(mapx);
+                let y = parseInt(mapy);
+
+                // 네이버가 제공하는 변환 함수 사용
+                let geoInfo = naver.maps.TransCoord.fromTM128ToLatLng(new naver.maps.Point(x, y));
+                // 변환 딕셔너리 반환
+                return { 'lat': geoInfo._lat, 'lng': geoInfo._lng }
+            }
+
+
+        </script>
+    </body>
+</html>
